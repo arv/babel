@@ -14,6 +14,7 @@ export type Format = {
   shouldPrintComment: (comment: string) => boolean,
   retainLines: boolean,
   retainFunctionParens: boolean,
+  retainExtraParens: boolean,
   comments: boolean,
   auxiliaryCommentBefore: string,
   auxiliaryCommentAfter: string,
@@ -345,18 +346,19 @@ export default class Printer {
     this._insideAux = !node.loc;
     this._maybeAddAuxComment(this._insideAux && !oldInAux);
 
+    this._printLeadingComments(node, parent);
+
     let needsParens = n.needsParens(node, parent, this._printStack);
     if (
-      this.format.retainFunctionParens &&
-      node.type === "FunctionExpression" &&
+      (this.format.retainExtraParens ||
+        (this.format.retainFunctionParens &&
+          node.type === "FunctionExpression")) &&
       node.extra &&
       node.extra.parenthesized
     ) {
       needsParens = true;
     }
     if (needsParens) this.token("(");
-
-    this._printLeadingComments(node, parent);
 
     const loc = t.isProgram(node) || t.isFile(node) ? null : node.loc;
     this.withSource("start", loc, () => {
