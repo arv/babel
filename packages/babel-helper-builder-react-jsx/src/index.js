@@ -89,7 +89,10 @@ You can turn on the 'throwIfNamespace' flag to bypass this warning.`,
       }
     }
 
-    if (t.isValidIdentifier(node.name.name)) {
+    if (
+      !t.isJSXNamespacedName(node.name) &&
+      esutils.keyword.isIdentifierNameES6(node.name.name)
+    ) {
       node.name.type = "Identifier";
     } else {
       node.name = t.stringLiteral(
